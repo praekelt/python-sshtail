@@ -14,7 +14,7 @@ class SSHTailer(object):
     Class to handle the tailing of a single file via SSH.
     """
 
-    def __init__(self, host, remote_filename, private_key=None):
+    def __init__(self, host, remote_filename, private_key=None, verbose=False):
         self.host = host
         self.remote_filename = remote_filename
         self.private_key = private_key
@@ -24,9 +24,12 @@ class SSHTailer(object):
         self.line_terminators = ['\r', '\n', '\r\n']
         self.line_terminators_joined = '\r\n'
 
+        self.verbose = verbose
+
 
     def connect(self):
-        print "Connecting to %s..." % self.host
+        if self.verbose:
+            print "Connecting to %s..." % self.host
         # connect to the host
         self.client = paramiko.SSHClient()
         self.client.load_system_host_keys()
@@ -36,7 +39,8 @@ class SSHTailer(object):
         else:
             self.client.connect(self.host)
 
-        print "Opening remote file %s..." % self.remote_filename
+        if self.verbose:
+            print "Opening remote file %s..." % self.remote_filename
         # open a connection to the remote file via SFTP
         self.sftp_client = self.client.open_sftp()
         
@@ -80,11 +84,13 @@ class SSHTailer(object):
 
     def disconnect(self):
         if self.sftp_client:
-            print "Closing SFTP connection..."
+            if self.verbose:
+                print "Closing SFTP connection..."
             self.sftp_client.close()
             self.sftp_client = None
         if self.client:
-            print "Closing SSH connection..."
+            if self.verbose:
+                print "Closing SSH connection..."
             self.client.close()
             self.client = None
 
@@ -96,7 +102,7 @@ class SSHMultiTailer(object):
     Class to handle tailing of multiple files.
     """
 
-    def __init__(self, host_files, poll_interval=2.0, private_key=None):
+    def __init__(self, host_files, poll_interval=2.0, private_key=None, verbose=False):
         """
         host_files is a dictionary whose keys must correspond to unique
         remote hosts to which this machine has access (ideally via SSH key).
@@ -108,6 +114,7 @@ class SSHMultiTailer(object):
         self.poll_interval = poll_interval
         self.private_key = private_key
         self.tailers = {}
+        self.verbose = verbose
 
 
     def connect(self):
@@ -115,7 +122,8 @@ class SSHMultiTailer(object):
         Connects to all of the host machines.
         """
 
-        print "Connecting to multiple hosts..."
+        if self.verbose:
+            print "Connecting to multiple hosts..."
 
         for host, files in self.host_files.iteritems():
             self.tailers[host] = {}
@@ -171,7 +179,8 @@ class SSHMultiTailer(object):
 
         self.tailers = {}
 
-        print "Disconnected from hosts."
+        if self.verbose:
+            print "Disconnected from hosts."
 
 
 
