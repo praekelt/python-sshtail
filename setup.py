@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='python-sshtail',
-    version='0.0.1',
+    version='0.0.2',
     description='Python classes to allow for tailing of multiple files via SSH.',
     long_description=open('README.rst', 'rt').read(),
     author='Praekelt Foundation',
