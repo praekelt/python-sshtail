@@ -15,7 +15,10 @@ class SSHTailer(object):
     """
 
     def __init__(self, host, remote_filename, private_key=None, verbose=False):
-        self.host = host
+        if '@' in host:
+            self.username, self.host = tuple(host.split('@'))
+        else:
+            self.username, self.host = None, host
         self.remote_filename = remote_filename
         self.private_key = private_key
         self.client = None
@@ -35,9 +38,9 @@ class SSHTailer(object):
         self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         if self.private_key:
-            self.client.connect(self.host, pkey=self.private_key)
+            self.client.connect(self.host, username=self.username, pkey=self.private_key)
         else:
-            self.client.connect(self.host)
+            self.client.connect(self.host, username=self.username)
 
         if self.verbose:
             print "Opening remote file %s..." % self.remote_filename
@@ -128,7 +131,7 @@ class SSHMultiTailer(object):
         for host, files in self.host_files.iteritems():
             self.tailers[host] = {}
             for f in files:
-                self.tailers[host][f] = SSHTailer(host, f, private_key=self.private_key)
+                self.tailers[host][f] = SSHTailer(host, f, private_key=self.private_key, verbose=self.verbose)
 
 
 
